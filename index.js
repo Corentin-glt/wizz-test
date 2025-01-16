@@ -59,7 +59,6 @@ app.post('/api/games/search', (req, res) => {
 
   return db.Game.findAll({ where })
     .then((games) => {
-      console.log(games);
       res.send(games);
     })
     .catch((err) => {
