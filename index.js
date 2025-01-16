@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const db = require('./models');
+const utils = require('./utils');
 
 const app = express();
 
@@ -61,6 +62,57 @@ app.post('/api/games/search', (req, res) => {
     .then((games) => {
       res.send(games);
     })
+    .catch((err) => {
+      console.log('There was an error querying games', JSON.stringify(err));
+      return res.send(err);
+    });
+});
+
+app.post('/api/games/populate', async (req, res) => {
+  const topIosS3Files = 'https://interview-marketing-eng-dev.s3.eu-west-1.amazonaws.com/ios.top100.json';
+  const topAndroidS3Files = 'https://interview-marketing-eng-dev.s3.eu-west-1.amazonaws.com/android.top100.json';
+
+  const topIos = await utils.fetchS3FileAsJson(topIosS3Files);
+  const topAndroid = await utils.fetchS3FileAsJson(topAndroidS3Files);
+
+  const topGames = [...topIos.flat(), ...topAndroid.flat()];
+
+  for await (const game of topGames) {
+    // eslint-disable-next-line no-continue
+    if (!game.id) continue;
+    const existingGame = await db.Game.findByPk(game.id);
+    if (!existingGame) {
+      const gameCreated = await db.Game.create({
+        id: game.id,
+        publisherId: game.publisher_id,
+        name: game.publisher_name,
+        platform: game.os,
+        storeId: game.publisher_id,
+        bundleId: game.publisher_id,
+        appVersion: game.version,
+        isPublished: true,
+      });
+      if (!gameCreated) throw new Error(`Impossible to create game: ${game.id}`);
+    } else {
+      const gameUpdated = await db.Game.update(
+        {
+          publisherId: game.publisher_id,
+          name: game.publisher_name,
+          platform: game.os,
+          storeId: game.publisher_id,
+          bundleId: game.publisher_id,
+          appVersion: game.version,
+          isPublished: true,
+        },
+        { where: { id: game.id } },
+      );
+      if (!gameUpdated) throw new Error(`Impossible to update game: ${game.id}`);
+    }
+  }
+
+  // return all db
+  return db.Game.findAll()
+    .then((games) => res.send(games))
     .catch((err) => {
       console.log('There was an error querying games', JSON.stringify(err));
       return res.send(err);

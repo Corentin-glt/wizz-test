@@ -38,6 +38,11 @@
         <add-update-game title="Add Game" @save-game="onAddOrUpdateGame" />
       </div>
     </section>
+    <section class="section section-container" style="padding-bottom: 10px;">
+      <div class="box">
+        <populate-top-100-games title="Populate top 100 Games" @populate-top-100-games="populateTop100Games" />
+      </div>
+    </section>
   </div>
   <script>
   const AddUpdateGame = {
@@ -207,9 +212,23 @@
     `
   }
 
+  const PopulateTop100Games = {
+    methods: {
+      populateTop100Games() {
+        console.log('HELLO')
+        this.$emit('populate-top-100-games')
+      }
+    },
+    template: `
+        <div class="field">
+            <button class="button is-success" v-on:click="populateTop100Games">Populate top 100 Games</button>
+        </div>
+    `
+  }
+
   new Vue({
     el: '#app',
-    components: { game: Game, 'add-update-game': AddUpdateGame, 'search-games': Search },
+    components: { game: Game, 'add-update-game': AddUpdateGame, 'search-games': Search, 'populate-top-100-games': PopulateTop100Games },
     data: {
       games: [],
       apiURL: 'http://localhost:3000/api/games'
@@ -254,7 +273,13 @@
           .then((response) => {
             this.games = response.data
           })
-      }
+      },
+      populateTop100Games() {
+        return axios.post(`${this.apiURL}/populate`)
+          .then((response) => {
+            this.games = response.data
+          })
+      },
     },
     beforeMount () {
       axios.get(this.apiURL)
