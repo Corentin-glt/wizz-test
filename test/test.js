@@ -2,6 +2,8 @@ const request = require('supertest');
 var assert = require('assert');
 const app = require('../index');
 
+const TOTAL_OF_CORRECT_ID_APPS = 287;
+
 /**
  * Testing create game endpoint
  */
@@ -126,6 +128,43 @@ describe('GET /api/games', function () {
             .end((err, result) => {
                 if (err) return done(err);
                 assert.strictEqual(result.body.length, 0);
+                done();
+            });
+    });
+});
+
+/**
+ * Testing get all games by search endpoint
+ */
+describe('POST /api/games/search', function () {
+    it('respond with json containing no games', function (done) {
+        request(app)
+            .post('/api/games/search')
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .end((err, result) => {
+                if (err) return done(err);
+                assert.strictEqual(result.body.length, 0);
+                done();
+            });
+    });
+});
+
+
+/**
+ * Testing populate endpoint
+ */
+describe('POST /api/games/populate', function () {
+    it('respond with 200', function (done) {
+        request(app)
+            .post('/api/games/populate')
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .end((err, result) => {
+                if (err) return done(err);
+                assert.strictEqual(result.body.length, TOTAL_OF_CORRECT_ID_APPS);
                 done();
             });
     });

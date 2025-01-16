@@ -59,12 +59,10 @@ app.post('/api/games/search', (req, res) => {
   if (platform) where.platform = platform;
 
   return db.Game.findAll({ where })
-    .then((games) => {
-      res.send(games);
-    })
+    .then((games) => res.send(games))
     .catch((err) => {
       console.log('There was an error querying games', JSON.stringify(err));
-      return res.send(err);
+      return res.status(500).send(err);
     });
 });
 
@@ -79,9 +77,11 @@ app.post('/api/games/populate', async (req, res) => {
 
   for await (const game of topGames) {
     // eslint-disable-next-line no-continue
-    if (!game.id || !Number(game.id)) continue;
+    if (!game.id || (!Number(game.id) && !Number(game.appId))) continue;
+    const shouldITrustAppId = !Number(game.id) && Number(game.appId);
+
     const gameData = {
-      id: Number(game.id),
+      id: !shouldITrustAppId ? Number(game.id) : Number(game.appId),
       publisherId: String(game.publisher_id),
       name: String(game.publisher_name),
       platform: String(game.os),
@@ -108,7 +108,7 @@ app.post('/api/games/populate', async (req, res) => {
     .then((games) => res.send(games))
     .catch((err) => {
       console.log('There was an error querying games', JSON.stringify(err));
-      return res.send(err);
+      return res.status(500).send(err);
     });
 });
 
