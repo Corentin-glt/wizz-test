@@ -77,11 +77,12 @@ app.post('/api/games/populate', async (req, res) => {
 
   for await (const game of topGames) {
     // eslint-disable-next-line no-continue
-    if (!game.id || (!Number(game.id) && !Number(game.appId))) continue;
-    const shouldITrustAppId = !Number(game.id) && Number(game.appId);
+    if (!game.id) continue;
+    // eslint-disable-next-line radix
+    const id = parseInt(game.id);
 
     const gameData = {
-      id: !shouldITrustAppId ? Number(game.id) : Number(game.appId),
+      id,
       publisherId: String(game.publisher_id),
       name: String(game.publisher_name),
       platform: String(game.os),
@@ -90,6 +91,7 @@ app.post('/api/games/populate', async (req, res) => {
       appVersion: String(game.version),
       isPublished: true,
     };
+
     const existingGame = await db.Game.findByPk(game.id);
     if (!existingGame) {
       const gameCreated = await db.Game.create(gameData);

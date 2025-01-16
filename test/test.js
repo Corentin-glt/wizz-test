@@ -2,7 +2,7 @@ const request = require('supertest');
 var assert = require('assert');
 const app = require('../index');
 
-const TOTAL_OF_CORRECT_ID_APPS = 287;
+const TOTAL_OF_CORRECT_ID_APPS = 587;
 
 /**
  * Testing create game endpoint
