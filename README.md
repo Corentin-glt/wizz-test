@@ -63,8 +63,20 @@ Many other applications at Voodoo will use consume this API.
 We are planning to put this project in production. According to you, what are the missing pieces to make this project production ready? 
 Please elaborate an action plan.
 
+>Action Plan:
+> - Testing and Code Quality: Achieve 90%+ test coverage, enforce static code analysis, and fix any style violations.
+> - Data Type Safety: Migrate to TypeScript for type-checking, validate runtime data (joi), and ensure database schema matches application models.
+> - Deployment: Finalize CI/CD pipelines for automated builds and deployments (github actions, etc ..).
+> - Security: Conduct a security audit and implement OWASP recommendations. (create an authentification to process with the DB, make this API secured (guard), and also add so IAM roles for S3 buckets, etc ...)
+> - Performance Optimization: Run load tests and optimize database queries with indexations. And add a pagination system on fetch methods.
+> - Monitoring and Recovery: Set up logging, monitoring, and disaster recovery plans.
+
+
 #### Question 2:
 Let's pretend our data team is now delivering new files every day into the S3 bucket, and our service needs to ingest those files
 every day through the populate API. Could you describe a suitable solution to automate this? Feel free to propose architectural changes.
 
-
+> Answer:
+> We can use the Amazon S3 Event Notifications feature to receive notifications when certain events happen in our S3 bucket. To enable notifications, we have to add a notification configuration that identifies the events that we want Amazon S3 to publish which can be triggered on specific events like object creation, deletion, or update. 
+> They are multi supported targets, but for a simple use case like this we can image to create a Lambda function that will be targeted by the S3 Event notifications. Then, this lambda will trigger our API in order to populate our DB. 
+> (doc: https://docs.aws.amazon.com/AmazonS3/latest/userguide/EventNotifications.html)
