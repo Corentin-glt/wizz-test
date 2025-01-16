@@ -79,31 +79,24 @@ app.post('/api/games/populate', async (req, res) => {
 
   for await (const game of topGames) {
     // eslint-disable-next-line no-continue
-    if (!game.id) continue;
+    if (!game.id || !Number(game.id)) continue;
+    const gameData = {
+      id: Number(game.id),
+      publisherId: String(game.publisher_id),
+      name: String(game.publisher_name),
+      platform: String(game.os),
+      storeId: String(game.publisher_id),
+      bundleId: String(game.publisher_id),
+      appVersion: String(game.version),
+      isPublished: true,
+    };
     const existingGame = await db.Game.findByPk(game.id);
     if (!existingGame) {
-      const gameCreated = await db.Game.create({
-        id: game.id,
-        publisherId: game.publisher_id,
-        name: game.publisher_name,
-        platform: game.os,
-        storeId: game.publisher_id,
-        bundleId: game.publisher_id,
-        appVersion: game.version,
-        isPublished: true,
-      });
+      const gameCreated = await db.Game.create(gameData);
       if (!gameCreated) throw new Error(`Impossible to create game: ${game.id}`);
     } else {
       const gameUpdated = await db.Game.update(
-        {
-          publisherId: game.publisher_id,
-          name: game.publisher_name,
-          platform: game.os,
-          storeId: game.publisher_id,
-          bundleId: game.publisher_id,
-          appVersion: game.version,
-          isPublished: true,
-        },
+        gameData,
         { where: { id: game.id } },
       );
       if (!gameUpdated) throw new Error(`Impossible to update game: ${game.id}`);
