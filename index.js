@@ -54,7 +54,7 @@ app.put('/api/games/:id', (req, res) => {
 app.post('/api/games/search', (req, res) => {
   const { name, platform } = req.body;
   const where = {};
-  if (name) where.name = name;
+  if (name) where.name = { [db.Sequelize.Op.like]: `%${name}%` };
   if (platform) where.platform = platform;
 
   return db.Game.findAll({ where })
